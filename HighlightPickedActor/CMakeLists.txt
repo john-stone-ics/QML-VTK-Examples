@@ -64,8 +64,9 @@ if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(${MYNAME})
 endif()
 
+set(QT_DIR ${Qt${QT_VERSION_MAJOR}_DIR})
 get_filename_component(QT_TOP "../../.."
-  REALPATH BASE_DIR "${Qt5_DIR}" CACHE
+  REALPATH BASE_DIR "${QT_DIR}" CACHE
 )
 
 find_package(VTK)
@@ -94,5 +95,5 @@ endif()
 message (STATUS "VTK_VERSION: ${VTK_VERSION}")
 message (STATUS "VTK_DIR: ${VTK_DIR}")
 message (STATUS "QT_VERSION: Qt${QT_VERSION_MAJOR}")
+message (STATUS "QT_DIR: ${QT_DIR}")
 message (STATUS "QT_TOP: ${QT_TOP}")
-message (STATUS "Qt5_DIR: ${Qt5_DIR}")

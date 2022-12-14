@@ -171,6 +171,10 @@ public Q_SLOTS:
         if (m_renderPending) {
             m_renderPending = false;
 
+            const bool needsWrap = QSGRendererInterface::isApiRhiBased(m_window->rendererInterface()->graphicsApi());
+            if (needsWrap)
+                m_window->beginExternalCommands();
+
             // Render VTK into it's framebuffer
             auto ostate = vtkWindow->GetState();
             ostate->Reset();
@@ -181,6 +185,9 @@ public Q_SLOTS:
             vtkWindow->GetInteractor()->Render();
             vtkWindow->SetReadyForRendering(false);
             ostate->Pop();
+
+            if (needsWrap)
+                m_window->endExternalCommands();
 
             markDirty(QSGNode::DirtyMaterial);
             Q_EMIT textureChanged();
@@ -268,7 +275,11 @@ QSGNode* QQuickVtkItem::updatePaintNode(QSGNode* node, UpdatePaintNodeData*)
         n->render();
         if (auto fb = n->vtkWindow->GetDisplayFramebuffer(); fb && fb->GetNumberOfColorAttachments() > 0) {
             GLuint texId = fb->GetColorAttachmentAsTextureObject(0)->GetHandle();
-            auto texture = window()->createTextureFromNativeObject(QQuickWindow::NativeObjectTexture, &texId, 0, sz.toSize(), QQuickWindow::TextureHasAlphaChannel);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+            auto *texture = window()->createTextureFromNativeObject(QQuickWindow::NativeObjectTexture, &texId, 0, sz.toSize(), QQuickWindow::TextureHasAlphaChannel);
+#else
+            auto *texture = QNativeInterface::QSGOpenGLTexture::fromNative(texId, window(), sz.toSize(), QQuickWindow::TextureHasAlphaChannel);
+#endif
             n->setTexture(texture);
         } else if (!fb)
             qWarning().nospace() << "QQuickVTKItem.cpp:" << __LINE__ << ", YIKES!!, Render() didn't create a FrameBuffer!?";
@@ -312,10 +323,12 @@ QSGTextureProvider* QQuickVtkItem::textureProvider() const
         return QQuickItem::textureProvider();
 
     QQuickWindow* w = window();
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     if (!w || !w->openglContext() || QThread::currentThread() != w->openglContext()->thread()) {
         qWarning("QQuickFramebufferObject::textureProvider: can only be queried on the rendering thread of an exposed window");
         return nullptr;
     }
+#endif
 
     auto api = window()->rendererInterface()->graphicsApi();
     if (api != QSGRendererInterface::OpenGL && api != QSGRendererInterface::OpenGLRhi) {
@@ -353,7 +366,7 @@ bool QQuickVtkItem::event(QEvent * ev)
 
     if (!ev)
         return false;
-
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     switch (ev->type())
     {
     case QEvent::HoverEnter:
@@ -561,7 +574,14 @@ bool QQuickVtkItem::event(QEvent * ev)
     default:
         return QQuickItem::event(ev);
     }
+#else
+    dispatch_async([d, e = ev->clone()]
+                   (vtkRenderWindow* vtkWindow, vtkUserData) mutable {
+                       d->qt2vtkInteractorAdapter.ProcessEvent(e, vtkWindow->GetInteractor());
+                       delete e;
+                   });
 
+#endif
     ev->accept();
 
     return true;
