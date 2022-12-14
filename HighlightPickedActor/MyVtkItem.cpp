@@ -80,10 +80,7 @@ struct MyVtkData : vtkObject
     static MyVtkData* New();
     vtkTypeMacro(MyVtkData, vtkObject);
 
-    vtkSmartPointer<vtkNamedColors> colors;
-    vtkSmartPointer<vtkRenderer> renderer;
-    vtkSmartPointer<MouseInteractorHighLightActor> style;
-    vtkSmartPointer<vtkMinimalStandardRandomSequence> randomSequence;
+    // Place all your persistant VTK objects here
 };
 
 vtkStandardNewMacro(MyVtkData);
