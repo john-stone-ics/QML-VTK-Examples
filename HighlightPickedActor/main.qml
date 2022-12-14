@@ -12,12 +12,14 @@ Window {
     Rectangle {
       anchors.fill: parent
       color: "yellow"
+      opacity: 0.2
+
     }
 
     Vtk.MyVtkItem {
         anchors.fill: parent
         anchors.margins: 10
-        opacity: 0.8
+        opacity: 0.7
     }
 
     Rectangle {
@@ -25,5 +27,6 @@ Window {
       width: 50
       height: 50
       color: "cyan"
+      opacity: 0.7
     }
 }
