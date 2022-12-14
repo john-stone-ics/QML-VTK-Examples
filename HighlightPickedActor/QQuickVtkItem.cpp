@@ -276,9 +276,9 @@ QSGNode* QQuickVtkItem::updatePaintNode(QSGNode* node, UpdatePaintNodeData*)
         if (auto fb = n->vtkWindow->GetDisplayFramebuffer(); fb && fb->GetNumberOfColorAttachments() > 0) {
             GLuint texId = fb->GetColorAttachmentAsTextureObject(0)->GetHandle();
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            auto *texture = window()->createTextureFromNativeObject(QQuickWindow::NativeObjectTexture, &texId, 0, sz.toSize(), QQuickWindow::TextureHasAlphaChannel);
+            auto *texture = window()->createTextureFromNativeObject(QQuickWindow::NativeObjectTexture, &texId, 0, sz.toSize(), QQuickWindow::TextureIsOpaque);
 #else
-            auto *texture = QNativeInterface::QSGOpenGLTexture::fromNative(texId, window(), sz.toSize(), QQuickWindow::TextureHasAlphaChannel);
+            auto *texture = QNativeInterface::QSGOpenGLTexture::fromNative(texId, window(), sz.toSize(), QQuickWindow::TextureIsOpaque);
 #endif
             n->setTexture(texture);
         } else if (!fb)

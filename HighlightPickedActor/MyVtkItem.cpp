@@ -104,6 +104,7 @@ QQuickVtkItem::vtkUserData MyVtkItem::initializeVTK(vtkRenderWindow *renderWindo
     renderWindow->SetSize(640, 480);
     renderWindow->AddRenderer(renderer);
     renderWindow->SetWindowName("HighlightPickedActor");
+    renderer->SetBackgroundAlpha(1.0);
 
     // An interactor
 //remove    vtkNew<vtkRenderWindowInteractor> renderWindowInteractor;

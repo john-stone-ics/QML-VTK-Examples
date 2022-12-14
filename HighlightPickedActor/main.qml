@@ -9,7 +9,21 @@ Window {
     visible: true
     title: qsTr("Hello World")
 
+    Rectangle {
+      anchors.fill: parent
+      color: "yellow"
+    }
+
     Vtk.MyVtkItem {
         anchors.fill: parent
+        anchors.margins: 10
+        opacity: 0.8
+    }
+
+    Rectangle {
+      anchors.centerIn: parent
+      width: 50
+      height: 50
+      color: "cyan"
     }
 }
