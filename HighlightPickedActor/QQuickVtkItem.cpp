@@ -150,6 +150,9 @@ public:
             qWarning().nospace() << "QQuickVTKItem.cpp:" << __LINE__ << ", YIKES!! Only QVTKInteractor is supported";
             return;
         }
+        vtkWindow->GetRenderers()->InitTraversal(); while (auto renderer = vtkWindow->GetRenderers()->GetNextItem())
+            if (renderer->GetBackgroundAlpha() < 1./255)
+                renderer->SetBackgroundAlpha(1.0);
         vtkWindow->SetReadyForRendering(false);
         vtkWindow->GetInteractor()->Initialize();
         vtkWindow->SetMapped(true);
@@ -276,9 +279,9 @@ QSGNode* QQuickVtkItem::updatePaintNode(QSGNode* node, UpdatePaintNodeData*)
         if (auto fb = n->vtkWindow->GetDisplayFramebuffer(); fb && fb->GetNumberOfColorAttachments() > 0) {
             GLuint texId = fb->GetColorAttachmentAsTextureObject(0)->GetHandle();
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            auto *texture = window()->createTextureFromNativeObject(QQuickWindow::NativeObjectTexture, &texId, 0, sz.toSize(), QQuickWindow::TextureIsOpaque);
+            auto *texture = window()->createTextureFromNativeObject(QQuickWindow::NativeObjectTexture, &texId, 0, sz.toSize(), QQuickWindow::TextureHasAlphaChannel);
 #else
-            auto *texture = QNativeInterface::QSGOpenGLTexture::fromNative(texId, window(), sz.toSize(), QQuickWindow::TextureIsOpaque);
+            auto *texture = QNativeInterface::QSGOpenGLTexture::fromNative(texId, window(), sz.toSize(), QQuickWindow::TextureHasAlphaChannel);
 #endif
             n->setTexture(texture);
         } else if (!fb)
